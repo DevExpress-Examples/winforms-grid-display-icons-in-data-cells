@@ -1,5 +1,4 @@
-Imports Microsoft.VisualBasic
-Imports System
+﻿Imports System
 Imports System.Drawing
 Imports System.Collections
 Imports System.ComponentModel
@@ -18,9 +17,9 @@ Namespace ImagesInCells
 	''' </summary>
 	Public Class Form1
 		Inherits System.Windows.Forms.Form
+
 		Private gridControl1 As DevExpress.XtraGrid.GridControl
 		Private gridView1 As DevExpress.XtraGrid.Views.Grid.GridView
-		Private WithEvents checkEdit1 As DevExpress.XtraEditors.CheckEdit
 		''' <summary>
 		''' Required designer variable.
 		''' </summary>
@@ -40,7 +39,7 @@ Namespace ImagesInCells
 		''' <summary>
 		''' Clean up any resources being used.
 		''' </summary>
-		Protected Overrides Overloads Sub Dispose(ByVal disposing As Boolean)
+		Protected Overrides Sub Dispose(ByVal disposing As Boolean)
 			If disposing Then
 				If components IsNot Nothing Then
 					components.Dispose()
@@ -57,16 +56,13 @@ Namespace ImagesInCells
 		Private Sub InitializeComponent()
 			Me.gridControl1 = New DevExpress.XtraGrid.GridControl()
 			Me.gridView1 = New DevExpress.XtraGrid.Views.Grid.GridView()
-			Me.checkEdit1 = New DevExpress.XtraEditors.CheckEdit()
-			CType(Me.gridControl1, System.ComponentModel.ISupportInitialize).BeginInit()
-			CType(Me.gridView1, System.ComponentModel.ISupportInitialize).BeginInit()
-			CType(Me.checkEdit1.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
+			DirectCast(Me.gridControl1, System.ComponentModel.ISupportInitialize).BeginInit()
+			DirectCast(Me.gridView1, System.ComponentModel.ISupportInitialize).BeginInit()
 			Me.SuspendLayout()
 			' 
 			' gridControl1
 			' 
 			Me.gridControl1.Dock = System.Windows.Forms.DockStyle.Fill
-			Me.gridControl1.EmbeddedNavigator.Name = ""
 			Me.gridControl1.Location = New System.Drawing.Point(0, 0)
 			Me.gridControl1.MainView = Me.gridView1
 			Me.gridControl1.Name = "gridControl1"
@@ -80,27 +76,17 @@ Namespace ImagesInCells
 			Me.gridView1.Name = "gridView1"
 			Me.gridView1.OptionsView.ShowGroupPanel = False
 			' 
-			' checkEdit1
-			' 
-			Me.checkEdit1.Location = New System.Drawing.Point(37, 315)
-			Me.checkEdit1.Name = "checkEdit1"
-			Me.checkEdit1.Properties.Caption = "Allow Edit"
-			Me.checkEdit1.Size = New System.Drawing.Size(80, 19)
-			Me.checkEdit1.TabIndex = 1
-'			Me.checkEdit1.CheckedChanged += New System.EventHandler(Me.checkEdit1_CheckedChanged);
-			' 
 			' Form1
 			' 
 			Me.AutoScaleBaseSize = New System.Drawing.Size(5, 13)
 			Me.ClientSize = New System.Drawing.Size(666, 372)
-			Me.Controls.Add(Me.checkEdit1)
 			Me.Controls.Add(Me.gridControl1)
 			Me.Name = "Form1"
 			Me.Text = "Form1"
-'			Me.Load += New System.EventHandler(Me.Form1_Load);
-			CType(Me.gridControl1, System.ComponentModel.ISupportInitialize).EndInit()
-			CType(Me.gridView1, System.ComponentModel.ISupportInitialize).EndInit()
-			CType(Me.checkEdit1.Properties, System.ComponentModel.ISupportInitialize).EndInit()
+'INSTANT VB NOTE: The following InitializeComponent event wireup was converted to a 'Handles' clause:
+'ORIGINAL LINE: this.Load += new System.EventHandler(this.Form1_Load);
+			DirectCast(Me.gridControl1, System.ComponentModel.ISupportInitialize).EndInit()
+			DirectCast(Me.gridView1, System.ComponentModel.ISupportInitialize).EndInit()
 			Me.ResumeLayout(False)
 
 		End Sub
@@ -109,15 +95,15 @@ Namespace ImagesInCells
 		''' <summary>
 		''' The main entry point for the application.
 		''' </summary>
-		<STAThread> _
+		<STAThread>
 		Shared Sub Main()
 			Application.Run(New Form1())
 		End Sub
 
 
 		Private Function GetImageFromResource(ByVal fileName As String) As Image
-			Dim resource As Stream = GetType(Form1).Assembly.GetManifestResourceStream("Resources." & fileName)
-			Return Image.FromStream(resource)
+			Dim value = My.Resources.ResourceManager.GetObject(fileName, My.Resources.Culture)
+			Return TryCast(value, Image)
 		End Function
 
 		Private Function GetImageData(ByVal fileName As String) As Byte()
@@ -127,60 +113,87 @@ Namespace ImagesInCells
 			Return mem.GetBuffer()
 		End Function
 
-		Private Sub Form1_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles MyBase.Load
+		Private Function CreateTable() As DataTable
 			Dim table As New DataTable()
-			table.Columns.Add("IsRead", GetType(Boolean))
-			table.Columns.Add("Type", GetType(Integer))
-			table.Columns.Add("Picture", GetType(Byte()))
+			Dim dataRow As DataRow
 
-			table.Rows.Add(New Object() {True, 1, GetImageData("datasource_enabled.bmp")})
-			table.Rows.Add(New Object() {False, 2, Nothing})
-			table.Rows.Add(New Object() {Nothing, 3, Nothing})
+			table.Columns.Add("CheckEdit", GetType(Boolean))
+			table.Columns.Add("ImageComboBox", GetType(Integer))
+			table.Columns.Add("PictureEdit", GetType(Image))
+			table.Columns.Add("ContextImage", GetType(String))
+			table.Columns.Add("HTMLImage", GetType(String))
 
-			Dim column As GridColumn
-			gridView1.PopulateColumns(table)
+			dataRow = table.NewRow()
+			dataRow("CheckEdit") = True
+			dataRow("ImageComboBox") = 1
+			dataRow("PictureEdit") = GetImageFromResource("Image5")
+			dataRow("ContextImage") = "Text1"
+			table.Rows.Add(dataRow)
 
-			' CheckEdit
+			dataRow = table.NewRow()
+			dataRow("CheckEdit") = False
+			dataRow("ImageComboBox") = 2
+			dataRow("PictureEdit") = Nothing
+			dataRow("ContextImage") = ""
+			'"<image=show_16x16.png> Image left"
+			dataRow("HTMLImage") = "Text " & "<image=Image7.png>"
+			table.Rows.Add(dataRow)
+
+			dataRow = table.NewRow()
+			dataRow("CheckEdit") = False
+			dataRow("ImageComboBox") = 3
+			dataRow("PictureEdit") = Nothing
+			dataRow("ContextImage") = "Text3"
+			table.Rows.Add(dataRow)
+
+			Return table
+		End Function
+
+		Private Sub Form1_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+			gridControl1.DataSource = CreateTable()
+
 			Dim checkEdit As RepositoryItemCheckEdit = TryCast(gridControl1.RepositoryItems.Add("CheckEdit"), RepositoryItemCheckEdit)
-			checkEdit.PictureChecked = GetImageFromResource("read.bmp")
-			checkEdit.PictureUnchecked = GetImageFromResource("unread.bmp")
+			checkEdit.PictureChecked = GetImageFromResource("Image0")
+			checkEdit.PictureUnchecked = GetImageFromResource("Image1")
 			checkEdit.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.UserDefined
-			column = gridView1.Columns("IsRead")
-			column.ColumnEdit = checkEdit
-			column.Caption &= " (CheckEdit)"
+			gridView1.Columns("CheckEdit").ColumnEdit = checkEdit
 
-			' ImageComboBox
 			Dim imageCombo As RepositoryItemImageComboBox = TryCast(gridControl1.RepositoryItems.Add("ImageComboBoxEdit"), RepositoryItemImageComboBox)
-
 			Dim images As New DevExpress.Utils.ImageCollection()
-			images.AddImage(GetImageFromResource("Error.png"))
-			images.AddImage(GetImageFromResource("Warning.png"))
-			images.AddImage(GetImageFromResource("Info.png"))
+			images.AddImage(GetImageFromResource("Image2"))
+			images.AddImage(GetImageFromResource("Image3"))
+			images.AddImage(GetImageFromResource("Image4"))
 			imageCombo.SmallImages = images
-			imageCombo.Items.Add(New ImageComboBoxItem("Error", 1, 0))
-			imageCombo.Items.Add(New ImageComboBoxItem("Warning", 2, 1))
-			imageCombo.Items.Add(New ImageComboBoxItem("Info", 3, 2))
+			imageCombo.Items.Add(New ImageComboBoxItem("Minor", 1, 0))
+			imageCombo.Items.Add(New ImageComboBoxItem("Moderate", 2, 1))
+			imageCombo.Items.Add(New ImageComboBoxItem("Severe", 3, 2))
 			imageCombo.GlyphAlignment = DevExpress.Utils.HorzAlignment.Center
-			column = gridView1.Columns("Type")
-			column.ColumnEdit = imageCombo
-			column.Caption &= " (ImageComboBox)"
-			column.ShowButtonMode = DevExpress.XtraGrid.Views.Base.ShowButtonModeEnum.ShowOnlyInEditor
+			gridControl1.RepositoryItems.Add(imageCombo)
+			gridView1.Columns("ImageComboBox").ColumnEdit = imageCombo
 
-			' PictureEdit
 			Dim pictureEdit As RepositoryItemPictureEdit = TryCast(gridControl1.RepositoryItems.Add("PictureEdit"), RepositoryItemPictureEdit)
 			pictureEdit.SizeMode = PictureSizeMode.Zoom
 			pictureEdit.NullText = " "
-			column = gridView1.Columns("Picture")
-			column.ColumnEdit = pictureEdit
-			column.Caption &= " (PictureEdit)"
+			gridView1.Columns("PictureEdit").ColumnEdit = pictureEdit
+			gridControl1.RepositoryItems.Add(pictureEdit)
 
-			gridControl1.DataSource = table
-			gridView1.OptionsBehavior.Editable = checkEdit1.Checked
+			Dim textEdit As New RepositoryItemTextEdit()
+			'textEdit.ContextImageOptions.Image = GetImageFromResource("Image6");
+			gridView1.Columns("ContextImage").ColumnEdit = textEdit
+			gridControl1.RepositoryItems.Add(textEdit)
+
+			Dim buttonEdit As New RepositoryItemButtonEdit()
+			buttonEdit.TextEditStyle = TextEditStyles.DisableTextEditor
+			buttonEdit.AllowHtmlDraw = DevExpress.Utils.DefaultBoolean.True
+			Dim collection = New DevExpress.Utils.ImageCollection()
+			collection.AddImage(GetImageFromResource("Image7"))
+			collection.Images.SetKeyName(0, "Image7.png")
+			buttonEdit.HtmlImages = collection
+			gridView1.Columns("HTMLImage").ColumnEdit = buttonEdit
+			gridControl1.RepositoryItems.Add(buttonEdit)
 		End Sub
 
-		Private Sub checkEdit1_CheckedChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles checkEdit1.CheckedChanged
-			gridView1.OptionsBehavior.Editable = checkEdit1.Checked
-		End Sub
+
 	End Class
 End Namespace
 
