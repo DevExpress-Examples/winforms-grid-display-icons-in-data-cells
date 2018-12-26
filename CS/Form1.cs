@@ -20,7 +20,6 @@ namespace ImagesInCells
 	{
 		private DevExpress.XtraGrid.GridControl gridControl1;
 		private DevExpress.XtraGrid.Views.Grid.GridView gridView1;
-		private DevExpress.XtraEditors.CheckEdit checkEdit1;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -62,16 +61,13 @@ namespace ImagesInCells
 		{
             this.gridControl1 = new DevExpress.XtraGrid.GridControl();
             this.gridView1 = new DevExpress.XtraGrid.Views.Grid.GridView();
-            this.checkEdit1 = new DevExpress.XtraEditors.CheckEdit();
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridView1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.checkEdit1.Properties)).BeginInit();
             this.SuspendLayout();
             // 
             // gridControl1
             // 
             this.gridControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gridControl1.EmbeddedNavigator.Name = "";
             this.gridControl1.Location = new System.Drawing.Point(0, 0);
             this.gridControl1.MainView = this.gridView1;
             this.gridControl1.Name = "gridControl1";
@@ -86,27 +82,16 @@ namespace ImagesInCells
             this.gridView1.Name = "gridView1";
             this.gridView1.OptionsView.ShowGroupPanel = false;
             // 
-            // checkEdit1
-            // 
-            this.checkEdit1.Location = new System.Drawing.Point(37, 315);
-            this.checkEdit1.Name = "checkEdit1";
-            this.checkEdit1.Properties.Caption = "Allow Edit";
-            this.checkEdit1.Size = new System.Drawing.Size(80, 19);
-            this.checkEdit1.TabIndex = 1;
-            this.checkEdit1.CheckedChanged += new System.EventHandler(this.checkEdit1_CheckedChanged);
-            // 
             // Form1
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.ClientSize = new System.Drawing.Size(666, 372);
-            this.Controls.Add(this.checkEdit1);
             this.Controls.Add(this.gridControl1);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridView1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.checkEdit1.Properties)).EndInit();
             this.ResumeLayout(false);
 
 		}
@@ -123,8 +108,8 @@ namespace ImagesInCells
 
 
         private Image GetImageFromResource(string fileName) {
-            Stream resource = typeof(Form1).Assembly.GetManifestResourceStream("ImagesInCells.Resources." + fileName);
-            return Image.FromStream(resource);
+            var value = Properties.Resources.ResourceManager.GetObject(fileName, Properties.Resources.Culture);
+            return value as Image;
         }
 
         private byte[] GetImageData(string fileName) {
@@ -134,60 +119,88 @@ namespace ImagesInCells
 			return mem.GetBuffer();
 		}
 
-		private void Form1_Load(object sender, System.EventArgs e) {
-			DataTable table = new DataTable();
-			table.Columns.Add("IsRead", typeof(bool));
-			table.Columns.Add("Type", typeof(int));
-			table.Columns.Add("Picture", typeof(byte[]));
+        DataTable CreateTable()
+        {
+            DataTable table = new DataTable();
+            DataRow dataRow;
 
-			table.Rows.Add(new object[] {true, 1, GetImageData("datasource_enabled.bmp")});
-			table.Rows.Add(new object[] {false, 2, null});
-			table.Rows.Add(new object[] {null, 3, null});
+            table.Columns.Add("CheckEdit", typeof(bool));
+            table.Columns.Add("ImageComboBox", typeof(int));
+            table.Columns.Add("PictureEdit", typeof(Image));
+            table.Columns.Add("ContextImage", typeof(string));
+            table.Columns.Add("HTMLImage", typeof(string));
 
-			GridColumn column;
-			gridView1.PopulateColumns(table);
+            dataRow = table.NewRow();
+            dataRow["CheckEdit"] = true;
+            dataRow["ImageComboBox"] = 1;
+            dataRow["PictureEdit"] = GetImageFromResource("Image5"); 
+            dataRow["ContextImage"] = "Text1";
+            table.Rows.Add(dataRow);
 
-			// CheckEdit
-			RepositoryItemCheckEdit checkEdit = gridControl1.RepositoryItems.Add("CheckEdit") as RepositoryItemCheckEdit;
-			checkEdit.PictureChecked = GetImageFromResource("read.bmp");
-			checkEdit.PictureUnchecked = GetImageFromResource("unread.bmp");
-			checkEdit.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.UserDefined;
-			column = gridView1.Columns["IsRead"];
-			column.ColumnEdit = checkEdit;
-			column.Caption += " (CheckEdit)";
-			
-			// ImageComboBox
-			RepositoryItemImageComboBox imageCombo = gridControl1.RepositoryItems.Add("ImageComboBoxEdit") as RepositoryItemImageComboBox;
-			
+            dataRow = table.NewRow();
+            dataRow["CheckEdit"] = false;
+            dataRow["ImageComboBox"] = 2;
+            dataRow["PictureEdit"] = null;
+            dataRow["ContextImage"] = "";
+            //"<image=show_16x16.png> Image left"
+            dataRow["HTMLImage"] = "Text " + "<image=Image7.png>";
+            table.Rows.Add(dataRow);
+
+            dataRow = table.NewRow();
+            dataRow["CheckEdit"] = false;
+            dataRow["ImageComboBox"] = 3;
+            dataRow["PictureEdit"] = null;
+            dataRow["ContextImage"] = "Text3";
+            table.Rows.Add(dataRow);
+
+            return table;
+        }
+
+        private void Form1_Load(object sender, System.EventArgs e) {
+            gridControl1.DataSource = CreateTable();
+
+            RepositoryItemCheckEdit checkEdit = gridControl1.RepositoryItems.Add("CheckEdit") as RepositoryItemCheckEdit;
+            checkEdit.PictureChecked = GetImageFromResource("Image0");
+            checkEdit.PictureUnchecked = GetImageFromResource("Image1");
+            checkEdit.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.UserDefined;
+            gridView1.Columns["CheckEdit"].ColumnEdit = checkEdit;
+
+            RepositoryItemImageComboBox imageCombo = gridControl1.RepositoryItems.Add("ImageComboBoxEdit") as RepositoryItemImageComboBox;
             DevExpress.Utils.ImageCollection images = new DevExpress.Utils.ImageCollection();
-			images.AddImage(GetImageFromResource("Error.png"));
-			images.AddImage(GetImageFromResource("Warning.png"));
-			images.AddImage(GetImageFromResource("Info.png"));
+            images.AddImage(GetImageFromResource("Image2"));
+            images.AddImage(GetImageFromResource("Image3"));
+            images.AddImage(GetImageFromResource("Image4"));
             imageCombo.SmallImages = images;
-			imageCombo.Items.Add(new ImageComboBoxItem("Error", 1, 0));
-			imageCombo.Items.Add(new ImageComboBoxItem("Warning", 2, 1));
-			imageCombo.Items.Add(new ImageComboBoxItem("Info", 3, 2));
-			imageCombo.GlyphAlignment = DevExpress.Utils.HorzAlignment.Center;
-			column = gridView1.Columns["Type"];
-			column.ColumnEdit = imageCombo;
-			column.Caption += " (ImageComboBox)";
-			column.ShowButtonMode = DevExpress.XtraGrid.Views.Base.ShowButtonModeEnum.ShowOnlyInEditor;
+            imageCombo.Items.Add(new ImageComboBoxItem("Minor", 1, 0));
+            imageCombo.Items.Add(new ImageComboBoxItem("Moderate", 2, 1));
+            imageCombo.Items.Add(new ImageComboBoxItem("Severe", 3, 2));
+            imageCombo.GlyphAlignment = DevExpress.Utils.HorzAlignment.Center;
+            gridControl1.RepositoryItems.Add(imageCombo);
+            gridView1.Columns["ImageComboBox"].ColumnEdit = imageCombo;
 
-			// PictureEdit
             RepositoryItemPictureEdit pictureEdit = gridControl1.RepositoryItems.Add("PictureEdit") as RepositoryItemPictureEdit;
-			pictureEdit.SizeMode = PictureSizeMode.Zoom;
-			pictureEdit.NullText = " ";
-			column = gridView1.Columns["Picture"];
-			column.ColumnEdit = pictureEdit;
-			column.Caption += " (PictureEdit)";
+            pictureEdit.SizeMode = PictureSizeMode.Zoom;
+            pictureEdit.NullText = " ";
+            gridView1.Columns["PictureEdit"].ColumnEdit = pictureEdit;
+            gridControl1.RepositoryItems.Add(pictureEdit);
 
-			gridControl1.DataSource = table;
-			gridView1.OptionsBehavior.Editable = checkEdit1.Checked;
-		}
+            RepositoryItemTextEdit textEdit = new RepositoryItemTextEdit();
+            //textEdit.ContextImageOptions.Image = GetImageFromResource("Image6");
+            gridView1.Columns["ContextImage"].ColumnEdit = textEdit;
+            gridControl1.RepositoryItems.Add(textEdit);
 
-		private void checkEdit1_CheckedChanged(object sender, System.EventArgs e) {
-			gridView1.OptionsBehavior.Editable = checkEdit1.Checked;
-		}
+            RepositoryItemButtonEdit buttonEdit = new RepositoryItemButtonEdit();
+            buttonEdit.TextEditStyle = TextEditStyles.DisableTextEditor;
+            buttonEdit.AllowHtmlDraw = DevExpress.Utils.DefaultBoolean.True;
+            var collection = new DevExpress.Utils.ImageCollection();
+            collection.AddImage(GetImageFromResource("Image7"));
+            collection.Images.SetKeyName(0, "Image7.png");
+            buttonEdit.HtmlImages = collection;
+            gridView1.Columns["HTMLImage"].ColumnEdit = buttonEdit;
+            gridControl1.RepositoryItems.Add(buttonEdit);
+        }
+
+	
 	}
 }
 
