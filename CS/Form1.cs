@@ -114,9 +114,10 @@ namespace ImagesInCells
 
         private byte[] GetImageData(string fileName) {
 			Image img = GetImageFromResource(fileName);
-			MemoryStream mem = new MemoryStream();
-            img.Save(mem, System.Drawing.Imaging.ImageFormat.Bmp);
-			return mem.GetBuffer();
+            using(var mem = new MemoryStream()) {
+                img.Save(mem, System.Drawing.Imaging.ImageFormat.Bmp);
+                return mem.GetBuffer();
+            }
 		}
 
         DataTable CreateTable()
@@ -199,8 +200,6 @@ namespace ImagesInCells
             gridView1.Columns["HTMLImage"].ColumnEdit = buttonEdit;
             gridControl1.RepositoryItems.Add(buttonEdit);
         }
-
-	
 	}
 }
 
