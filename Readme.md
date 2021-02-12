@@ -9,8 +9,13 @@
 <p>This example demonstrates how you can display icons in grid cells.<br />
 For more information, please see the following KB article: <a href="https://www.devexpress.com/Support/Center/p/A900">How to put an image in a grid cell</a>.</p>
 
-See Also: 
+<b>See also:</b>
+
 <a href="https://docs.devexpress.com/WindowsForms/643/controls-and-libraries/data-grid/views/grid-view/cells#icons">Cell Icons</a>
+
+[DevExpress WinForms Cheat Sheet - Display Images in Controls](https://go.devexpress.com/CheatSheets_WinForms_Examples_T914488.aspx)
+
+[DevExpress WinForms Troubleshooting - Grid Control](https://go.devexpress.com/CheatSheets_WinForms_Examples_T934742.aspx)
 
 <br/>
 
