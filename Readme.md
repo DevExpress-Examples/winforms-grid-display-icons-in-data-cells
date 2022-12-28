@@ -11,8 +11,7 @@
 # How to put icons to grid cells
 
 
-<p>This example demonstrates how you can display icons in grid cells.<br />
-For more information, please see the following KB article: <a href="https://docs.devexpress.com/WindowsForms/643/controls-and-libraries/data-grid/views/grid-view/cells#how-to-put-an-image-in-a-grid-cell">Cells</a>.</p>
+<p>This example demonstrates how you can display icons in grid cells.<br /></p>
 
 <b>See also:</b>
 
