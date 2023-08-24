@@ -10,6 +10,11 @@ using DevExpress.XtraEditors;
 using DevExpress.XtraEditors.Controls;
 using DevExpress.XtraEditors.Repository;
 using DevExpress.Utils.Controls;
+using DevExpress.Pdf.ContentGeneration.Interop;
+using DevExpress.XtraGrid;
+using System.Collections.Generic;
+using DevExpress.XtraGrid.Views.Card;
+using DevExpress.XtraGrid.Views.Grid;
 
 namespace ImagesInCells
 {
@@ -80,6 +85,7 @@ namespace ImagesInCells
             // 
             this.gridView1.GridControl = this.gridControl1;
             this.gridView1.Name = "gridView1";
+            this.gridView1.OptionsView.RowAutoHeight = true;
             this.gridView1.OptionsView.ShowGroupPanel = false;
             // 
             // Form1
@@ -130,12 +136,14 @@ namespace ImagesInCells
             table.Columns.Add("PictureEdit", typeof(Image));
             table.Columns.Add("ContextImage", typeof(string));
             table.Columns.Add("HTMLImage", typeof(string));
+            table.Columns.Add("CustomDraw", typeof(string));
 
             dataRow = table.NewRow();
             dataRow["CheckEdit"] = true;
             dataRow["ImageComboBox"] = 1;
             dataRow["PictureEdit"] = GetImageFromResource("Image5"); 
             dataRow["ContextImage"] = "Text1";
+            dataRow["CustomDraw"] = "Image0";
             table.Rows.Add(dataRow);
 
             dataRow = table.NewRow();
@@ -145,6 +153,7 @@ namespace ImagesInCells
             dataRow["ContextImage"] = "";
             //"<image=show_16x16.png> Image left"
             dataRow["HTMLImage"] = "Text " + "<image=Image7.png>";
+            dataRow["CustomDraw"] = "Image1";
             table.Rows.Add(dataRow);
 
             dataRow = table.NewRow();
@@ -152,6 +161,7 @@ namespace ImagesInCells
             dataRow["ImageComboBox"] = 3;
             dataRow["PictureEdit"] = null;
             dataRow["ContextImage"] = "Text3";
+            dataRow["CustomDraw"] = "Image2";
             table.Rows.Add(dataRow);
 
             return table;
@@ -159,6 +169,9 @@ namespace ImagesInCells
 
         private void Form1_Load(object sender, System.EventArgs e) {
             gridControl1.DataSource = CreateTable();
+
+            gridView1.CustomDrawCell += GridView1_CustomDrawCell;
+            gridView1.CustomUnboundColumnData += GridView1_CustomUnboundColumnData;
 
             RepositoryItemCheckEdit checkEdit = gridControl1.RepositoryItems.Add("CheckEdit") as RepositoryItemCheckEdit;
             checkEdit.PictureChecked = GetImageFromResource("Image0");
@@ -190,7 +203,7 @@ namespace ImagesInCells
             gridView1.Columns["ContextImage"].ColumnEdit = textEdit;
             gridControl1.RepositoryItems.Add(textEdit);
 
-            RepositoryItemButtonEdit buttonEdit = new RepositoryItemButtonEdit();
+            RepositoryItemHypertextLabel buttonEdit = new RepositoryItemHypertextLabel();
             buttonEdit.TextEditStyle = TextEditStyles.DisableTextEditor;
             buttonEdit.AllowHtmlDraw = DevExpress.Utils.DefaultBoolean.True;
             var collection = new DevExpress.Utils.ImageCollection();
@@ -199,7 +212,40 @@ namespace ImagesInCells
             buttonEdit.HtmlImages = collection;
             gridView1.Columns["HTMLImage"].ColumnEdit = buttonEdit;
             gridControl1.RepositoryItems.Add(buttonEdit);
+
+            gridView1.Columns.Add(new DevExpress.XtraGrid.Columns.GridColumn() {
+                Caption = "Unbound Column",
+                FieldName = "UnboundColumn",
+                UnboundDataType = typeof(object),
+                Visible = true
+            });
+
+            RepositoryItemPictureEdit pictureEditUnbound = gridControl1.RepositoryItems.Add("PictureEdit") as RepositoryItemPictureEdit;
+            pictureEditUnbound.SizeMode = PictureSizeMode.Zoom;
+            pictureEditUnbound.NullText = " ";
+            gridView1.Columns["UnboundColumn"].ColumnEdit = pictureEditUnbound;
+            gridControl1.RepositoryItems.Add(pictureEditUnbound);
         }
-	}
+        Dictionary<string, Image> imageCache = new Dictionary<string, Image>();
+        private void GridView1_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e) {
+            if (e.IsSetData)
+                return;
+            GridView view = sender as GridView;
+            var path = (string)view.GetListSourceRowCellValue(e.ListSourceRowIndex, "CustomDraw");
+            if (string.IsNullOrEmpty(path))
+                return;
+            try {
+                e.Value = GetImageFromResource(path);
+            } catch { }
+        }
+
+        private void GridView1_CustomDrawCell(object sender, DevExpress.XtraGrid.Views.Base.RowCellCustomDrawEventArgs e) {
+            if (e.RowHandle != GridControl.NewItemRowHandle && e.Column.FieldName == "CustomDraw") {
+                e.DisplayText = string.Empty;
+                e.DefaultDraw();
+                e.Cache.DrawImage(GetImageFromResource(e.CellValue.ToString()), e.Bounds.X, e.Bounds.Y);
+            }
+        }
+    }
 }
 
