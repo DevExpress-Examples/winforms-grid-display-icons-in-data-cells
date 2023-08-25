@@ -4,9 +4,13 @@ Imports System.ComponentModel
 Imports System.Windows.Forms
 Imports System.Data
 Imports System.IO
+Imports DevExpress.XtraGrid.Columns
 Imports DevExpress.XtraEditors.Controls
 Imports DevExpress.XtraEditors.Repository
 Imports DevExpress.Utils.Controls
+Imports DevExpress.XtraGrid
+Imports System.Collections.Generic
+Imports DevExpress.XtraGrid.Views.Grid
 
 Namespace ImagesInCells
 
@@ -16,9 +20,9 @@ Namespace ImagesInCells
     Public Class Form1
         Inherits Form
 
-        Private gridControl1 As DevExpress.XtraGrid.GridControl
+        Private gridControl1 As GridControl
 
-        Private gridView1 As DevExpress.XtraGrid.Views.Grid.GridView
+        Private gridView1 As GridView
 
         ''' <summary>
         ''' Required designer variable.
@@ -54,8 +58,8 @@ Namespace ImagesInCells
         ''' the contents of this method with the code editor.
         ''' </summary>
         Private Sub InitializeComponent()
-            gridControl1 = New DevExpress.XtraGrid.GridControl()
-            gridView1 = New DevExpress.XtraGrid.Views.Grid.GridView()
+            gridControl1 = New GridControl()
+            gridView1 = New GridView()
             CType(gridControl1, System.ComponentModel.ISupportInitialize).BeginInit()
             CType(gridView1, System.ComponentModel.ISupportInitialize).BeginInit()
             Me.SuspendLayout()
@@ -66,14 +70,15 @@ Namespace ImagesInCells
             gridControl1.Location = New System.Drawing.Point(0, 0)
             gridControl1.MainView = gridView1
             gridControl1.Name = "gridControl1"
-            gridControl1.Size = New System.Drawing.Size(666, 372)
+            gridControl1.Size = New System.Drawing.Size(665, 372)
             gridControl1.TabIndex = 0
-            gridControl1.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridView1})
+            gridControl1.ViewCollection.AddRange(New Views.Base.BaseView() {gridView1})
             ' 
             ' gridView1
             ' 
             gridView1.GridControl = gridControl1
             gridView1.Name = "gridView1"
+            gridView1.OptionsView.RowAutoHeight = True
             gridView1.OptionsView.ShowGroupPanel = False
             ' 
             ' Form1
@@ -119,11 +124,13 @@ Namespace ImagesInCells
             table.Columns.Add("PictureEdit", GetType(Image))
             table.Columns.Add("ContextImage", GetType(String))
             table.Columns.Add("HTMLImage", GetType(String))
+            table.Columns.Add("CustomDraw", GetType(String))
             dataRow = table.NewRow()
             dataRow("CheckEdit") = True
             dataRow("ImageComboBox") = 1
             dataRow("PictureEdit") = GetImageFromResource("Image5")
             dataRow("ContextImage") = "Text1"
+            dataRow("CustomDraw") = "Image0"
             table.Rows.Add(dataRow)
             dataRow = table.NewRow()
             dataRow("CheckEdit") = False
@@ -132,18 +139,22 @@ Namespace ImagesInCells
             dataRow("ContextImage") = ""
             '"<image=show_16x16.png> Image left"
             dataRow("HTMLImage") = "Text " & "<image=Image7.png>"
+            dataRow("CustomDraw") = "Image1"
             table.Rows.Add(dataRow)
             dataRow = table.NewRow()
             dataRow("CheckEdit") = False
             dataRow("ImageComboBox") = 3
             dataRow("PictureEdit") = Nothing
             dataRow("ContextImage") = "Text3"
+            dataRow("CustomDraw") = "Image2"
             table.Rows.Add(dataRow)
             Return table
         End Function
 
         Private Sub Form1_Load(ByVal sender As Object, ByVal e As EventArgs)
             gridControl1.DataSource = CreateTable()
+            AddHandler gridView1.CustomDrawCell, AddressOf GridView1_CustomDrawCell
+            AddHandler gridView1.CustomUnboundColumnData, AddressOf GridView1_CustomUnboundColumnData
             Dim checkEdit As RepositoryItemCheckEdit = TryCast(gridControl1.RepositoryItems.Add("CheckEdit"), RepositoryItemCheckEdit)
             checkEdit.PictureChecked = GetImageFromResource("Image0")
             checkEdit.PictureUnchecked = GetImageFromResource("Image1")
@@ -170,7 +181,7 @@ Namespace ImagesInCells
             'textEdit.ContextImageOptions.Image = GetImageFromResource("Image6");
             gridView1.Columns("ContextImage").ColumnEdit = textEdit
             gridControl1.RepositoryItems.Add(textEdit)
-            Dim buttonEdit As RepositoryItemButtonEdit = New RepositoryItemButtonEdit()
+            Dim buttonEdit As RepositoryItemHypertextLabel = New RepositoryItemHypertextLabel()
             buttonEdit.TextEditStyle = TextEditStyles.DisableTextEditor
             buttonEdit.AllowHtmlDraw = DevExpress.Utils.DefaultBoolean.True
             Dim collection = New DevExpress.Utils.ImageCollection()
@@ -179,6 +190,33 @@ Namespace ImagesInCells
             buttonEdit.HtmlImages = collection
             gridView1.Columns("HTMLImage").ColumnEdit = buttonEdit
             gridControl1.RepositoryItems.Add(buttonEdit)
+            gridView1.Columns.Add(New GridColumn() With {.Caption = "Unbound Column", .FieldName = "UnboundColumn", .UnboundDataType = GetType(Object), .Visible = True})
+            Dim pictureEditUnbound As RepositoryItemPictureEdit = TryCast(gridControl1.RepositoryItems.Add("PictureEdit"), RepositoryItemPictureEdit)
+            pictureEditUnbound.SizeMode = PictureSizeMode.Zoom
+            pictureEditUnbound.NullText = " "
+            gridView1.Columns("UnboundColumn").ColumnEdit = pictureEditUnbound
+            gridControl1.RepositoryItems.Add(pictureEditUnbound)
+        End Sub
+
+        Private imageCache As Dictionary(Of String, Image) = New Dictionary(Of String, Image)()
+
+        Private Sub GridView1_CustomUnboundColumnData(ByVal sender As Object, ByVal e As Views.Base.CustomColumnDataEventArgs)
+            If e.IsSetData Then Return
+            Dim view As GridView = TryCast(sender, GridView)
+            Dim path = CStr(view.GetListSourceRowCellValue(e.ListSourceRowIndex, "CustomDraw"))
+            If String.IsNullOrEmpty(path) Then Return
+            Try
+                e.Value = GetImageFromResource(path)
+            Catch
+            End Try
+        End Sub
+
+        Private Sub GridView1_CustomDrawCell(ByVal sender As Object, ByVal e As Views.Base.RowCellCustomDrawEventArgs)
+            If e.RowHandle <> GridControl.NewItemRowHandle AndAlso Equals(e.Column.FieldName, "CustomDraw") Then
+                e.DisplayText = String.Empty
+                e.DefaultDraw()
+                e.Cache.DrawImage(GetImageFromResource(e.CellValue.ToString()), e.Bounds.X, e.Bounds.Y)
+            End If
         End Sub
     End Class
 End Namespace
