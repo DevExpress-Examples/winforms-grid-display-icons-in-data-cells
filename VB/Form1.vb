@@ -178,7 +178,7 @@ Namespace ImagesInCells
             gridView1.Columns("PictureEdit").ColumnEdit = pictureEdit
             gridControl1.RepositoryItems.Add(pictureEdit)
             Dim textEdit As RepositoryItemTextEdit = New RepositoryItemTextEdit()
-            'textEdit.ContextImageOptions.Image = GetImageFromResource("Image6");
+            textEdit.ContextImageOptions.Image = GetImageFromResource("Image6")
             gridView1.Columns("ContextImage").ColumnEdit = textEdit
             gridControl1.RepositoryItems.Add(textEdit)
             Dim buttonEdit As RepositoryItemHypertextLabel = New RepositoryItemHypertextLabel()
