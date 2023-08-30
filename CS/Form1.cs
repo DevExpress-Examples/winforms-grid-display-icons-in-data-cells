@@ -199,7 +199,7 @@ namespace ImagesInCells
             gridControl1.RepositoryItems.Add(pictureEdit);
 
             RepositoryItemTextEdit textEdit = new RepositoryItemTextEdit();
-            //textEdit.ContextImageOptions.Image = GetImageFromResource("Image6");
+            textEdit.ContextImageOptions.Image = GetImageFromResource("Image6");
             gridView1.Columns["ContextImage"].ColumnEdit = textEdit;
             gridControl1.RepositoryItems.Add(textEdit);
 
