@@ -6,7 +6,7 @@
 
 # WinForms Data Grid - Display icons in grid cells
 
-This example demonstrates various techniques to display images/icons within data cells. For example, the `CustomDrawCell` event is handleed to draw icons within **CustomDraw** column cells.
+This example demonstrates various techniques to display images/icons within data cells. For example, the `CustomDrawCell` event is handled to draw icons within **CustomDraw** column cells.
 
 ```csharp
 private void GridView1_CustomDrawCell(object sender, DevExpress.XtraGrid.Views.Base.RowCellCustomDrawEventArgs e) {
